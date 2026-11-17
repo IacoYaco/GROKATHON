@@ -89,9 +89,23 @@ export function NewsletterParser() {
     }
   };
 
-  const onClaim = (workshop: Workshop) => {
+  const onClaim = async (workshop: Workshop) => {
     const rsvp = claimRsvp(workshop);
     downloadIcs(rsvp);
+    try {
+      await fetch("/api/rsvp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          workshopId: workshop.id,
+          workshopTitle: workshop.title,
+          startsAt: workshop.startsAt,
+          location: workshop.location,
+        }),
+      });
+    } catch {
+      // local RSVP + .ics already succeeded
+    }
   };
 
   return (

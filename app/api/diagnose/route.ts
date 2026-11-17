@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
+import { resolveCeidSession } from "@/lib/auth-server";
 import { mockDiagnosis } from "@/lib/mocks";
+import { readJsonLimited } from "@/lib/request-guards";
 import {
   extractJsonObject,
   getXaiClient,
@@ -17,7 +19,17 @@ interface DiagnoseBody {
 
 export async function POST(request: Request) {
   try {
-    const body = (await request.json()) as DiagnoseBody;
+    const session = await resolveCeidSession(request);
+    if (!session.permissions.canDiagnose) {
+      return NextResponse.json(
+        { error: "Link a Yale ID account to use Snap-to-Diagnose" },
+        { status: 403 }
+      );
+    }
+
+    const parsed = await readJsonLimited<DiagnoseBody>(request, "diagnose");
+    if (!parsed.ok) return parsed.response;
+    const body = parsed.body;
     if (!body.imageBase64) {
       return NextResponse.json(
         { error: "imageBase64 is required" },
@@ -82,16 +94,16 @@ Be specific about temperatures, speeds, and materials when relevant.`,
     });
 
     const text = completion.choices[0]?.message?.content || "";
-    const parsed = extractJsonObject(text) as DiagnosisResult;
+    const parsedJson = extractJsonObject(text) as DiagnosisResult;
     const data: DiagnosisResult = {
       machineId: body.machineId,
-      hardware: parsed.hardware,
-      failureMode: parsed.failureMode,
-      rootCause: parsed.rootCause,
-      fixChecklist: Array.isArray(parsed.fixChecklist)
-        ? parsed.fixChecklist
+      hardware: parsedJson.hardware,
+      failureMode: parsedJson.failureMode,
+      rootCause: parsedJson.rootCause,
+      fixChecklist: Array.isArray(parsedJson.fixChecklist)
+        ? parsedJson.fixChecklist
         : [],
-      suggestedStatus: parsed.suggestedStatus || "issue",
+      suggestedStatus: parsedJson.suggestedStatus || "issue",
     };
 
     const payload: ApiEnvelope<DiagnosisResult> = { mode: "live", data };

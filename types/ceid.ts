@@ -1,5 +1,33 @@
 export type ApiMode = "live" | "fallback";
 
+export type CeidRole = "student" | "faculty";
+
+export interface CeidAccount {
+  id: number;
+  cursorSub: string;
+  netid: string;
+  displayName: string;
+  email: string;
+  role: CeidRole;
+  affiliations: string[];
+  authSource: "yale_cas" | "demo";
+  college: string;
+  classYear: string;
+  lastLoginAt: string;
+}
+
+export interface CeidPermissions {
+  canDiagnose: boolean;
+  canRunDfm: boolean;
+  canParseNewsletter: boolean;
+  canUpdateMachineStatus: boolean;
+  canForceMachineOffline: boolean;
+  canViewRsvpRoster: boolean;
+  canPostAnnouncements: boolean;
+  canOverrideCerts: boolean;
+  canAccessFacultyConsole: boolean;
+}
+
 export type MachineStatus = "free" | "in_use" | "issue" | "offline";
 
 export type CertId =
@@ -90,4 +118,4 @@ export interface ApiEnvelope<T> {
   error?: string;
 }
 
-export type AppView = "floor" | "dfm" | "workshops";
+export type AppView = "floor" | "dfm" | "workshops" | "faculty";

@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
+import { resolveCeidSession } from "@/lib/auth-server";
 import { mockWorkshops } from "@/lib/mocks";
+import { readJsonLimited } from "@/lib/request-guards";
 import {
   extractJsonObject,
   getXaiClient,
@@ -14,7 +16,20 @@ interface ParseBody {
 
 export async function POST(request: Request) {
   try {
-    const body = (await request.json()) as ParseBody;
+    const session = await resolveCeidSession(request);
+    if (!session.permissions.canParseNewsletter) {
+      return NextResponse.json(
+        { error: "Link a Yale ID account to use Cert Sniper" },
+        { status: 403 }
+      );
+    }
+
+    const parsed = await readJsonLimited<ParseBody>(
+      request,
+      "parse-newsletter"
+    );
+    if (!parsed.ok) return parsed.response;
+    const body = parsed.body;
     if (!body.emailText?.trim()) {
       return NextResponse.json(
         { error: "emailText is required" },
@@ -71,9 +86,9 @@ If year is missing, assume the next upcoming occurrence from today.`,
     });
 
     const text = completion.choices[0]?.message?.content || "";
-    const parsed = extractJsonObject(text) as { workshops?: Workshop[] };
-    const data = Array.isArray(parsed.workshops)
-      ? parsed.workshops
+    const parsedJson = extractJsonObject(text) as { workshops?: Workshop[] };
+    const data = Array.isArray(parsedJson.workshops)
+      ? parsedJson.workshops
       : mockWorkshops();
 
     const payload: ApiEnvelope<Workshop[]> = { mode: "live", data };

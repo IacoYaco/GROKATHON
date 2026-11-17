@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
+import { resolveCeidSession } from "@/lib/auth-server";
 import { mockDfmPlan } from "@/lib/mocks";
+import { readJsonLimited } from "@/lib/request-guards";
 import {
   extractJsonObject,
   getXaiClient,
@@ -19,7 +21,17 @@ interface DfmBody {
 
 export async function POST(request: Request) {
   try {
-    const body = (await request.json()) as DfmBody;
+    const session = await resolveCeidSession(request);
+    if (!session.permissions.canRunDfm) {
+      return NextResponse.json(
+        { error: "Link a Yale ID account to use Agentic DFM" },
+        { status: 403 }
+      );
+    }
+
+    const parsed = await readJsonLimited<DfmBody>(request, "dfm");
+    if (!parsed.ok) return parsed.response;
+    const body = parsed.body;
     if (!body.projectDescription?.trim()) {
       return NextResponse.json(
         { error: "projectDescription is required" },
@@ -88,14 +100,14 @@ Material locations should sound like Becton Center stock (Sheet Rack B, North Wa
     });
 
     const text = completion.choices[0]?.message?.content || "";
-    const parsed = extractJsonObject(text) as DfmPlan;
+    const parsedJson = extractJsonObject(text) as DfmPlan;
     const data: DfmPlan = {
-      summary: parsed.summary,
-      sequence: Array.isArray(parsed.sequence) ? parsed.sequence : [],
-      traps: Array.isArray(parsed.traps) ? parsed.traps : [],
-      materials: Array.isArray(parsed.materials) ? parsed.materials : [],
-      requiredCerts: Array.isArray(parsed.requiredCerts)
-        ? parsed.requiredCerts
+      summary: parsedJson.summary,
+      sequence: Array.isArray(parsedJson.sequence) ? parsedJson.sequence : [],
+      traps: Array.isArray(parsedJson.traps) ? parsedJson.traps : [],
+      materials: Array.isArray(parsedJson.materials) ? parsedJson.materials : [],
+      requiredCerts: Array.isArray(parsedJson.requiredCerts)
+        ? parsedJson.requiredCerts
         : [],
     };
 

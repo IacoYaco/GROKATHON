@@ -3,18 +3,22 @@
 import { Clock3, MoreHorizontal } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { StatusPill } from "@/components/ui/StatusPill";
+import { useAuth } from "@/hooks/useAuth";
 import { useCeidStore } from "@/hooks/useCeidStore";
 import { confidenceLabel, formatRelativeTime } from "@/lib/utils";
 import type { Machine, MachineStatus } from "@/types/ceid";
 
-const QUICK: { status: MachineStatus; label: string }[] = [
-  { status: "free", label: "Free" },
-  { status: "in_use", label: "In Use" },
-  { status: "issue", label: "Issue" },
-];
-
 function MachineCard({ machine }: { machine: Machine }) {
+  const { permissions } = useAuth();
   const { updateMachineStatus } = useCeidStore();
+  const quick: { status: MachineStatus; label: string }[] = [
+    { status: "free", label: "Free" },
+    { status: "in_use", label: "In Use" },
+    { status: "issue", label: "Issue" },
+    ...(permissions.canForceMachineOffline
+      ? [{ status: "offline" as const, label: "Offline (Faculty)" }]
+      : []),
+  ];
   const [open, setOpen] = useState(false);
   const [now, setNow] = useState(Date.now());
   const popRef = useRef<HTMLDivElement>(null);
@@ -72,8 +76,8 @@ function MachineCard({ machine }: { machine: Machine }) {
           Update Status
         </button>
         {open && (
-          <div className="absolute bottom-full left-0 right-0 z-20 mb-2 overflow-hidden rounded-[12px] border border-[#E5E7EB] bg-white shadow-lg">
-            {QUICK.map((q) => (
+          <div className="absolute bottom-full left-0 right-0 z-20 mb-2 overflow-hidden rounded-[16px] border border-[#E7E7E7] bg-white/95 shadow-lg backdrop-blur">
+            {quick.map((q) => (
               <button
                 key={q.status}
                 type="button"
@@ -81,6 +85,10 @@ function MachineCard({ machine }: { machine: Machine }) {
                 onClick={() => {
                   updateMachineStatus(machine.id, q.status, {
                     verifiedViaGrok: false,
+                    note:
+                      q.status === "offline"
+                        ? "Marked offline by faculty"
+                        : undefined,
                   });
                   setOpen(false);
                 }}

@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useRef, useState } from "react";
 import { StatusPill } from "@/components/ui/StatusPill";
+import { useAuth } from "@/hooks/useAuth";
 import { useCeidStore } from "@/hooks/useCeidStore";
 import { SAMPLE_DFM_PROJECT } from "@/lib/sample-data";
 import type { ApiEnvelope, CertId, DfmPlan } from "@/types/ceid";
@@ -31,6 +32,7 @@ const CERT_LABEL: Record<CertId, string> = {
 };
 
 export function DfmPanel() {
+  const { permissions } = useAuth();
   const {
     certs,
     setApiMode,
@@ -51,6 +53,8 @@ export function DfmPanel() {
     plan?.requiredCerts.filter(
       (id) => !certs.find((c) => c.id === id)?.unlocked
     ) || [];
+  const showCertGate =
+    lockedRequired.length > 0 && !permissions.canOverrideCerts;
 
   const runDfm = async () => {
     if (!description.trim()) {
@@ -90,10 +94,10 @@ export function DfmPanel() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-[family-name:var(--font-fraunces)] text-2xl font-semibold text-[#00356B] md:text-3xl">
+        <h1 className="font-[family-name:var(--font-fraunces)] text-3xl font-light italic tracking-[-0.02em] text-[#212121] md:text-4xl">
           Agentic DFM Router
         </h1>
-        <p className="mt-1 max-w-2xl text-sm text-[#6B7280] md:text-base">
+        <p className="mt-1 max-w-2xl text-sm text-[#424242] md:text-base">
           Describe the build. Grok routes it across CEID stations, flags DFM
           traps, and gates on your live safety certifications.
         </p>
@@ -182,8 +186,8 @@ export function DfmPanel() {
 
       {plan && !loading && (
         <div className="space-y-4">
-          {lockedRequired.length > 0 && (
-            <div className="rounded-[12px] border border-[#F5C2C0] bg-[#FCE8E6] p-4">
+          {showCertGate && (
+            <div className="rounded-[16px] border border-[#F5C2C0] bg-[#FCE8E6]/90 p-4">
               <div className="flex items-start gap-3">
                 <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0 text-[#C5221F]" />
                 <div className="flex-1">
@@ -201,7 +205,7 @@ export function DfmPanel() {
                         key={id}
                         type="button"
                         onClick={() => jumpToCertSniper(id)}
-                        className="inline-flex min-h-11 items-center gap-2 rounded-[12px] bg-[#B06000] px-3 text-sm font-semibold text-white"
+                        className="inline-flex min-h-11 items-center gap-2 rounded-full bg-[#B06000] px-3 text-sm font-semibold text-white"
                       >
                         Unlock via Cert Sniper →
                         <ArrowRight className="h-4 w-4" />
@@ -211,6 +215,13 @@ export function DfmPanel() {
                   </div>
                 </div>
               </div>
+            </div>
+          )}
+          {lockedRequired.length > 0 && permissions.canOverrideCerts && (
+            <div className="rounded-[16px] border border-[#FEF7E0] bg-[#FEF7E0]/90 p-4 text-sm text-[#B06000]">
+              Faculty override: locked student certs (
+              {lockedRequired.map((id) => CERT_LABEL[id]).join(", ")}) do not
+              block your DFM review.
             </div>
           )}
 

@@ -4,24 +4,29 @@
   "private": true,
   "scripts": {
     "dev": "next dev --port 3456",
-    "build": "next build",
+    "build": "next build && node scripts/migrate.mjs",
     "start": "next start --port 3456",
     "lint": "eslint"
   },
   "dependencies": {
+    "@electric-sql/pglite": "^0.5.16",
     "clsx": "^2.1.1",
     "lucide-react": "^1.74.0",
     "next": "16.4.6",
     "openai": "^7.59.0",
+    "pg": "^8.23.1",
     "react": "19.3.0",
     "react-dom": "19.3.0",
-    "tailwind-merge": "^3.7.0"
+    "tailwind-merge": "^3.7.0",
+    "three": "^0.187.0"
   },
   "devDependencies": {
     "@tailwindcss/turbopack": "4.3.3",
     "@types/node": "^20",
+    "@types/pg": "^8.23.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/three": "^0.187.0",
     "eslint": "^9",
     "eslint-config-next": "16.4.6",
     "tailwindcss": "4.3.3",
