@@ -120,7 +120,43 @@ export interface ApiEnvelope<T> {
   error?: string;
 }
 
-export type AppView = "floor" | "dfm" | "workshops" | "faculty" | "cad" | "sandbox";
+export type AppView =
+  | "home"
+  | "floor"
+  | "dfm"
+  | "workshops"
+  | "faculty"
+  | "cad"
+  | "sandbox"
+  | "materials";
+
+export type MaterialCategory =
+  | "wood"
+  | "fasteners"
+  | "filament"
+  | "acrylic"
+  | "consumables";
+
+export type StockLevel = "in_stock" | "low" | "out";
+
+export interface MaterialItem {
+  id: string;
+  name: string;
+  category: MaterialCategory;
+  spec: string;
+  location: string;
+  quantity: number;
+  unit: string;
+  lowThreshold: number;
+}
+
+export interface LabAnnouncement {
+  id: string;
+  title: string;
+  body: string;
+  postedAt: string;
+  tag: "hours" | "safety" | "supply" | "general";
+}
 
 export interface CadHole {
   x: number;

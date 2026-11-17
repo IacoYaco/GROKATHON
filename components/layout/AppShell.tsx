@@ -4,7 +4,9 @@ import {
   Activity,
   Boxes,
   CalendarCheck2,
+  Home,
   LogOut,
+  PackageSearch,
   Route,
   ShieldCheck,
   University,
@@ -15,6 +17,8 @@ import { CadStudio } from "@/components/cad/CadStudio";
 import { FacultyConsole } from "@/components/faculty/FacultyConsole";
 import { DfmPanel } from "@/components/dfm/DfmPanel";
 import { FloorPulse } from "@/components/floor/FloorPulse";
+import { HomeDashboard } from "@/components/home/HomeDashboard";
+import { MaterialsStock } from "@/components/materials/MaterialsStock";
 import { ToolSandbox } from "@/components/sandbox/ToolSandbox";
 import { WorkshopView } from "@/components/workshops/WorkshopView";
 import { ApiModeBadge } from "@/components/ui/ApiModeBadge";
@@ -30,7 +34,14 @@ const NAV: {
   icon: typeof Activity;
   facultyOnly?: boolean;
 }[] = [
+  { id: "home", label: "Home", short: "Home", icon: Home },
   { id: "floor", label: "Floor Pulse", short: "Floor", icon: Activity },
+  {
+    id: "materials",
+    label: "Materials & Stock",
+    short: "Stock",
+    icon: PackageSearch,
+  },
   { id: "dfm", label: "Agentic DFM", short: "DFM", icon: Route },
   {
     id: "workshops",
@@ -153,8 +164,8 @@ export function AppShell() {
       </header>
 
       <div className="mx-auto flex w-full max-w-7xl flex-1 gap-0 lg:gap-6 lg:px-6 lg:py-6">
-        <aside className="hidden w-56 shrink-0 lg:block">
-          <nav className="gloss-panel sticky top-36 space-y-1 p-2">
+        <aside className="hidden w-60 shrink-0 lg:block">
+          <nav className="gloss-panel sticky top-36 max-h-[calc(100vh-10rem)] space-y-1 overflow-y-auto p-2">
             {navItems.map((item) => {
               const Icon = item.icon;
               const active = view === item.id;
@@ -179,7 +190,9 @@ export function AppShell() {
         </aside>
 
         <main className="min-w-0 flex-1 px-4 pb-28 pt-4 lg:px-0 lg:pb-6 lg:pt-0">
+          {view === "home" && <HomeDashboard />}
           {view === "floor" && <FloorPulse />}
+          {view === "materials" && <MaterialsStock />}
           {view === "dfm" && <DfmPanel />}
           {view === "workshops" && <WorkshopView />}
           {view === "cad" && <CadStudio />}
@@ -189,16 +202,7 @@ export function AppShell() {
       </div>
 
       <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-white/70 bg-white/80 backdrop-blur-xl lg:hidden">
-        <div
-          className={cn(
-            "mx-auto grid max-w-2xl gap-1 px-2 py-2",
-            navItems.length >= 5
-              ? "grid-cols-3 sm:grid-cols-6"
-              : navItems.length === 4
-                ? "grid-cols-4"
-                : "grid-cols-3"
-          )}
-        >
+        <div className="mx-auto grid max-w-3xl grid-cols-4 gap-1 px-2 py-2 sm:grid-cols-4 md:grid-cols-8">
           {navItems.map((item) => {
             const Icon = item.icon;
             const active = view === item.id;

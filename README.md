@@ -4,13 +4,30 @@ Modern, mobile-responsive co-pilot for students and faculty at the Yale Center f
 
 ## Features
 
-1. **Yale ID login** — Link a NetID via Yale CAS (or demo Student/Faculty accounts until ITS registers the service). Profiles live in Postgres.
-2. **Floor Pulse & Snap-to-Diagnose** — Camera/upload a failed print; Grok Vision returns failure mode, root cause, and a fix checklist.
-3. **Agentic DFM Router** — Fabrication plans across CEID stations with cert gates (students) or faculty override.
-4. **Workshop & Cert Sniper** — Parse CEID newsletters, claim seats, download `.ics`.
-5. **AI CAD Studio** — Natural-language STL edits with Three.js preview + download.
-6. **Tool Sandbox** — Just-in-time interactive CEID machine training panels.
-7. **Faculty Console** — RSVP roster, floor announcements, offline machine controls.
+1. **Yale ID login** — Link a NetID via Yale CAS (or demo Student accounts until ITS registers the service; faculty via CAS / local simulated preview). Profiles live in Postgres.
+2. **Home dashboard** — Post-login studio hub: equipment snapshot, materials search, hours/announcements, project shortcuts.
+3. **Materials & Stock** — Searchable inventory for wood, fasteners, filament, acrylic, and consumables with stock badges and bin locations.
+4. **Floor Pulse & Snap-to-Diagnose** — Camera/upload a failed print; Grok Vision returns failure mode, root cause, and a fix checklist.
+5. **Agentic DFM Router** — Fabrication plans across CEID stations with cert gates (students) or faculty override.
+6. **Workshop & Cert Sniper** — Parse CEID newsletters, claim seats, download `.ics`.
+7. **AI CAD Studio** — Natural-language STL edits with Three.js preview + download.
+8. **Tool Sandbox** — Just-in-time interactive CEID machine training panels.
+9. **Faculty Console** — RSVP roster, floor announcements, offline machine controls.
+
+## Architecture (Home + Materials)
+
+```
+AppShell (nav + auth gate)
+├── HomeDashboard          # default post-login view
+│   ├── equipment widget → Floor Pulse
+│   ├── materials search → MaterialsStock (shared query in CeidStore)
+│   ├── hours / announcements (lib/materials.ts)
+│   └── project / RSVP shortcuts → DFM, CAD, Sandbox, Certs
+└── MaterialsStock
+    ├── category filters + search
+    ├── stock badges (in / low / out)
+    └── table (desktop) / cards (mobile)
+```
 
 ## Roles
 

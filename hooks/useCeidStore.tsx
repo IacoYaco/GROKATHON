@@ -27,6 +27,7 @@ const KEYS = {
   rsvps: "ceid.rsvps",
   dfmRequiredCerts: "ceid.dfmRequiredCerts",
   certFilter: "ceid.certFilter",
+  materialsQuery: "ceid.materialsQuery",
 } as const;
 
 function readJson<T>(key: string, fallback: T): T {
@@ -52,11 +53,14 @@ interface CeidStoreValue {
   rsvps: Rsvp[];
   dfmRequiredCerts: CertId[];
   certFilter: CertId | null;
+  materialsQuery: string;
   view: AppView;
   apiMode: ApiMode | null;
   setView: (view: AppView) => void;
   setApiMode: (mode: ApiMode) => void;
   setCertFilter: (cert: CertId | null) => void;
+  setMaterialsQuery: (query: string) => void;
+  openMaterials: (query?: string) => void;
   toggleCert: (id: CertId) => void;
   updateMachineStatus: (
     id: string,
@@ -78,7 +82,8 @@ export function CeidStoreProvider({ children }: { children: ReactNode }) {
   const [rsvps, setRsvps] = useState<Rsvp[]>([]);
   const [dfmRequiredCerts, setDfmRequiredCertsState] = useState<CertId[]>([]);
   const [certFilter, setCertFilterState] = useState<CertId | null>(null);
-  const [view, setView] = useState<AppView>("floor");
+  const [materialsQuery, setMaterialsQueryState] = useState("");
+  const [view, setView] = useState<AppView>("home");
   const [apiMode, setApiMode] = useState<ApiMode | null>(null);
 
   useEffect(() => {
@@ -87,6 +92,7 @@ export function CeidStoreProvider({ children }: { children: ReactNode }) {
     setRsvps(readJson(KEYS.rsvps, []));
     setDfmRequiredCertsState(readJson(KEYS.dfmRequiredCerts, []));
     setCertFilterState(readJson(KEYS.certFilter, null));
+    setMaterialsQueryState(readJson(KEYS.materialsQuery, ""));
     setHydrated(true);
   }, []);
 
@@ -114,6 +120,11 @@ export function CeidStoreProvider({ children }: { children: ReactNode }) {
     if (!hydrated) return;
     writeJson(KEYS.certFilter, certFilter);
   }, [certFilter, hydrated]);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    writeJson(KEYS.materialsQuery, materialsQuery);
+  }, [materialsQuery, hydrated]);
 
   const toggleCert = useCallback((id: CertId) => {
     setCerts((prev) =>
@@ -153,6 +164,15 @@ export function CeidStoreProvider({ children }: { children: ReactNode }) {
     setCertFilterState(cert);
   }, []);
 
+  const setMaterialsQuery = useCallback((query: string) => {
+    setMaterialsQueryState(query);
+  }, []);
+
+  const openMaterials = useCallback((query?: string) => {
+    if (typeof query === "string") setMaterialsQueryState(query);
+    setView("materials");
+  }, []);
+
   const claimRsvp = useCallback((workshop: Workshop): Rsvp => {
     const rsvp: Rsvp = {
       workshopId: workshop.id,
@@ -187,11 +207,14 @@ export function CeidStoreProvider({ children }: { children: ReactNode }) {
       rsvps,
       dfmRequiredCerts,
       certFilter,
+      materialsQuery,
       view,
       apiMode,
       setView,
       setApiMode,
       setCertFilter,
+      setMaterialsQuery,
+      openMaterials,
       toggleCert,
       updateMachineStatus,
       setDfmRequiredCerts,
@@ -206,9 +229,12 @@ export function CeidStoreProvider({ children }: { children: ReactNode }) {
       rsvps,
       dfmRequiredCerts,
       certFilter,
+      materialsQuery,
       view,
       apiMode,
       setCertFilter,
+      setMaterialsQuery,
+      openMaterials,
       toggleCert,
       updateMachineStatus,
       setDfmRequiredCerts,
