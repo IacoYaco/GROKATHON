@@ -45,7 +45,7 @@ const NAV: {
 
 export function AppShell() {
   const { loading, account, permissions, logoutYale } = useAuth();
-  const { view, setView, certs, toggleCert, hydrated } = useCeidStore();
+  const { view, setView, certs, toggleCert } = useCeidStore();
 
   if (loading) {
     return (
@@ -173,19 +173,10 @@ export function AppShell() {
         </aside>
 
         <main className="min-w-0 flex-1 px-4 pb-28 pt-4 lg:px-0 lg:pb-6 lg:pt-0">
-          {!hydrated ? (
-            <div className="space-y-4">
-              <div className="ceid-skeleton h-40 w-full" />
-              <div className="ceid-skeleton h-64 w-full" />
-            </div>
-          ) : (
-            <>
-              {view === "floor" && <FloorPulse />}
-              {view === "dfm" && <DfmPanel />}
-              {view === "workshops" && <WorkshopView />}
-              {view === "faculty" && <FacultyConsole />}
-            </>
-          )}
+          {view === "floor" && <FloorPulse />}
+          {view === "dfm" && <DfmPanel />}
+          {view === "workshops" && <WorkshopView />}
+          {view === "faculty" && <FacultyConsole />}
         </main>
       </div>
 
