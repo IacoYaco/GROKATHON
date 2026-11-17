@@ -148,6 +148,14 @@ export interface MaterialItem {
   quantity: number;
   unit: string;
   lowThreshold: number;
+  /** TouchNet PRODUCTID when known */
+  touchnetProductId?: string;
+  /** Deep link into TouchNet uStore */
+  touchnetUrl?: string;
+  /** Display price from TouchNet, e.g. "$2.00–$16.00" */
+  priceLabel?: string;
+  sku?: string;
+  source?: "touchnet" | "ceid_floor" | "cache" | "fallback";
 }
 
 export interface LabAnnouncement {

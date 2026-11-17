@@ -11,18 +11,19 @@ import {
   Sparkles,
   Wrench,
 } from "lucide-react";
+import { useEffect, useState } from "react";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { useAuth } from "@/hooks/useAuth";
 import { useCeidStore } from "@/hooks/useCeidStore";
 import {
-  INVENTORY_LAST_REPORT_AT,
   LAB_ANNOUNCEMENTS,
   LAB_HOURS,
   SAMPLE_MATERIALS,
   stockLevel,
 } from "@/lib/materials";
+import { TOUCHNET_STORE_URL } from "@/lib/touchnet";
 import { formatRelativeTime } from "@/lib/utils";
-import type { AppView, MachineStatus } from "@/types/ceid";
+import type { AppView, MachineStatus, MaterialItem } from "@/types/ceid";
 
 const STATUS_RANK: Record<MachineStatus, number> = {
   free: 0,
@@ -35,6 +36,41 @@ export function HomeDashboard() {
   const { account } = useAuth();
   const { machines, rsvps, setView, openMaterials, materialsQuery, setMaterialsQuery } =
     useCeidStore();
+  const [inventory, setInventory] = useState<MaterialItem[]>(SAMPLE_MATERIALS);
+  const [syncedAt, setSyncedAt] = useState<string | null>(null);
+  const [tick, setTick] = useState(Date.now());
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const res = await fetch("/api/materials/touchnet", { cache: "no-store" });
+        const json = await res.json();
+        if (!res.ok || cancelled) return;
+        setInventory(json.items || SAMPLE_MATERIALS);
+        setSyncedAt(json.fetchedAt || new Date().toISOString());
+      } catch {
+        if (!cancelled) {
+          setInventory(
+            SAMPLE_MATERIALS.map((m) => ({
+              ...m,
+              touchnetUrl: TOUCHNET_STORE_URL,
+              source: "fallback" as const,
+            }))
+          );
+          setSyncedAt(new Date().toISOString());
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    const id = window.setInterval(() => setTick(Date.now()), 60_000);
+    return () => window.clearInterval(id);
+  }, []);
 
   const freeCount = machines.filter((m) => m.status === "free").length;
   const busyCount = machines.filter((m) => m.status === "in_use").length;
@@ -46,10 +82,9 @@ export function HomeDashboard() {
     .sort((a, b) => STATUS_RANK[a.status] - STATUS_RANK[b.status])
     .slice(0, 4);
 
-  const lowStock = SAMPLE_MATERIALS.filter((m) => stockLevel(m) !== "in_stock").slice(
-    0,
-    4
-  );
+  const lowStock = inventory
+    .filter((m) => stockLevel(m) !== "in_stock")
+    .slice(0, 4);
 
   const quickLinks: {
     view: AppView;
@@ -226,7 +261,10 @@ export function HomeDashboard() {
           </ul>
           <p className="mt-3 flex items-center gap-1.5 text-xs text-[#6B7280]">
             <Clock3 className="h-3.5 w-3.5" />
-            Inventory report synced {formatRelativeTime(INVENTORY_LAST_REPORT_AT)}
+            Synced from TouchNet Store #239
+            {syncedAt
+              ? ` · Updated ${formatRelativeTime(syncedAt, tick)}`
+              : ""}
           </p>
         </section>
       </div>

@@ -6,7 +6,7 @@ Modern, mobile-responsive co-pilot for students and faculty at the Yale Center f
 
 1. **Yale ID login** — Link a NetID via Yale CAS (or demo Student accounts until ITS registers the service; faculty via CAS / local simulated preview). Profiles live in Postgres.
 2. **Home dashboard** — Post-login studio hub: equipment snapshot, materials search, hours/announcements, project shortcuts.
-3. **Materials & Stock** — Searchable inventory for wood, fasteners, filament, acrylic, and consumables with stock badges and bin locations.
+3. **Materials & Stock** — Live inventory synced from TouchNet uStore #239 (wood/acrylic catalog + floor overlays for fasteners/filament), with stock badges, SKUs, and “View / Buy on TouchNet” deep links.
 4. **Floor Pulse & Snap-to-Diagnose** — Camera/upload a failed print; Grok Vision returns failure mode, root cause, and a fix checklist.
 5. **Agentic DFM Router** — Fabrication plans across CEID stations with cert gates (students) or faculty override.
 6. **Workshop & Cert Sniper** — Parse CEID newsletters, claim seats, download `.ics`.
@@ -24,10 +24,14 @@ AppShell (nav + auth gate)
 │   ├── hours / announcements (lib/materials.ts)
 │   └── project / RSVP shortcuts → DFM, CAD, Sandbox, Certs
 └── MaterialsStock
+    ├── GET /api/materials/touchnet (server proxy + 5m cache / fallback)
+    ├── sync badge: “Synced from TouchNet Store #239” + relative time + refresh
     ├── category filters + search
-    ├── stock badges (in / low / out)
-    └── table (desktop) / cards (mobile)
+    ├── stock badges from TouchNet quantities (in / low / out)
+    └── “View / Buy on TouchNet” deep links (mobile cards + desktop table)
 ```
+
+Public TouchNet pages expose catalog, sizes, and pricing; exact remaining sheet counts are not always published, so quantities use sold-out detection plus CEID floor estimates with cache/fallback when scrape is rate-limited.
 
 ## Roles
 
