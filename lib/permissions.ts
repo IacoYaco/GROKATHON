@@ -12,6 +12,8 @@ export function permissionsFor(role: CeidRole | null): CeidPermissions {
       canPostAnnouncements: false,
       canOverrideCerts: false,
       canAccessFacultyConsole: false,
+      canUseCadStudio: false,
+      canUseToolSandbox: false,
     };
   }
 
@@ -25,6 +27,8 @@ export function permissionsFor(role: CeidRole | null): CeidPermissions {
     canPostAnnouncements: false,
     canOverrideCerts: false,
     canAccessFacultyConsole: false,
+    canUseCadStudio: true,
+    canUseToolSandbox: true,
   };
 
   if (role === "faculty") {

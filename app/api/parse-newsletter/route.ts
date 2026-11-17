@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { resolveCeidSession } from "@/lib/auth-server";
 import { mockWorkshops } from "@/lib/mocks";
+import { takeGrokRateLimit } from "@/lib/rate-limit";
 import { readJsonLimited } from "@/lib/request-guards";
 import {
   extractJsonObject,
@@ -17,10 +18,20 @@ interface ParseBody {
 export async function POST(request: Request) {
   try {
     const session = await resolveCeidSession(request);
-    if (!session.permissions.canParseNewsletter) {
+    if (!session.permissions.canParseNewsletter || !session.cursorSub) {
       return NextResponse.json(
         { error: "Link a Yale ID account to use Cert Sniper" },
         { status: 403 }
+      );
+    }
+    const limited = takeGrokRateLimit(session.cursorSub);
+    if (!limited.ok) {
+      return NextResponse.json(
+        { error: "Too many Grok requests. Try again shortly." },
+        {
+          status: 429,
+          headers: { "retry-after": String(limited.retryAfterSec) },
+        }
       );
     }
 

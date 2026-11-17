@@ -26,6 +26,8 @@ export interface CeidPermissions {
   canPostAnnouncements: boolean;
   canOverrideCerts: boolean;
   canAccessFacultyConsole: boolean;
+  canUseCadStudio: boolean;
+  canUseToolSandbox: boolean;
 }
 
 export type MachineStatus = "free" | "in_use" | "issue" | "offline";
@@ -118,4 +120,64 @@ export interface ApiEnvelope<T> {
   error?: string;
 }
 
-export type AppView = "floor" | "dfm" | "workshops" | "faculty";
+export type AppView = "floor" | "dfm" | "workshops" | "faculty" | "cad" | "sandbox";
+
+export interface CadHole {
+  x: number;
+  y: number;
+  diameter: number;
+  label: string;
+}
+
+export interface CadFeature {
+  x: number;
+  y: number;
+  width: number;
+  depth: number;
+  height: number;
+  label: string;
+}
+
+export interface CadRecipe {
+  partName: string;
+  width: number;
+  depth: number;
+  height: number;
+  cornerRadius: number;
+  wallThickness: number | null;
+  holes: CadHole[];
+  features: CadFeature[];
+  onshapeNotes: string[];
+  printTips: string[];
+  summary: string;
+}
+
+export interface SandboxControl {
+  id: string;
+  label: string;
+  unit: string;
+  min: number;
+  max: number;
+  step: number;
+  defaultValue: number;
+  targetMin: number;
+  targetMax: number;
+  hint: string;
+}
+
+export interface SandboxStep {
+  id: string;
+  instruction: string;
+  controlId: string;
+}
+
+export interface SandboxScenario {
+  toolName: string;
+  ceidLocation: string;
+  previewKind: "laser" | "printer" | "calipers" | "solder";
+  materialLabel: string;
+  controls: SandboxControl[];
+  steps: SandboxStep[];
+  safetyRules: string[];
+  coaching: string;
+}

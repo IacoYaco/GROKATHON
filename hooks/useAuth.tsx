@@ -19,6 +19,8 @@ interface AuthState {
   identityEmail: string;
   simulated: boolean;
   casLive: boolean;
+  demoAuthAllowed: boolean;
+  demoFacultyAllowed: boolean;
   account: CeidAccount | null;
   permissions: CeidPermissions;
   refresh: () => Promise<void>;
@@ -42,6 +44,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [identityEmail, setIdentityEmail] = useState("");
   const [simulated, setSimulated] = useState(false);
   const [casLive, setCasLive] = useState(false);
+  const [demoAuthAllowed, setDemoAuthAllowed] = useState(false);
+  const [demoFacultyAllowed, setDemoFacultyAllowed] = useState(false);
   const [account, setAccount] = useState<CeidAccount | null>(null);
 
   const refresh = useCallback(async () => {
@@ -54,9 +58,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIdentityEmail(json.identityEmail || "");
       setSimulated(Boolean(json.simulated));
       setCasLive(Boolean(json.casLive));
+      setDemoAuthAllowed(Boolean(json.demoAuthAllowed));
+      setDemoFacultyAllowed(Boolean(json.demoFacultyAllowed));
       setAccount(json.account || null);
     } catch {
       setAccount(null);
+      setDemoAuthAllowed(false);
+      setDemoFacultyAllowed(false);
     } finally {
       setLoading(false);
     }
@@ -105,6 +113,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       identityEmail,
       simulated,
       casLive,
+      demoAuthAllowed,
+      demoFacultyAllowed,
       account,
       permissions: permissionsFor(account?.role ?? null),
       refresh,
@@ -119,6 +129,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       identityEmail,
       simulated,
       casLive,
+      demoAuthAllowed,
+      demoFacultyAllowed,
       account,
       refresh,
       demoLogin,

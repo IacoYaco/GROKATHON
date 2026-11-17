@@ -2,16 +2,20 @@
 
 import {
   Activity,
+  Boxes,
   CalendarCheck2,
   LogOut,
   Route,
   ShieldCheck,
   University,
+  Wrench,
 } from "lucide-react";
 import { YaleLoginGate } from "@/components/auth/YaleLoginGate";
+import { CadStudio } from "@/components/cad/CadStudio";
 import { FacultyConsole } from "@/components/faculty/FacultyConsole";
 import { DfmPanel } from "@/components/dfm/DfmPanel";
 import { FloorPulse } from "@/components/floor/FloorPulse";
+import { ToolSandbox } from "@/components/sandbox/ToolSandbox";
 import { WorkshopView } from "@/components/workshops/WorkshopView";
 import { ApiModeBadge } from "@/components/ui/ApiModeBadge";
 import { useAuth } from "@/hooks/useAuth";
@@ -34,6 +38,8 @@ const NAV: {
     short: "Certs",
     icon: CalendarCheck2,
   },
+  { id: "cad", label: "AI CAD Studio", short: "CAD", icon: Boxes },
+  { id: "sandbox", label: "Tool Sandbox", short: "Sandbox", icon: Wrench },
   {
     id: "faculty",
     label: "Faculty Console",
@@ -176,6 +182,8 @@ export function AppShell() {
           {view === "floor" && <FloorPulse />}
           {view === "dfm" && <DfmPanel />}
           {view === "workshops" && <WorkshopView />}
+          {view === "cad" && <CadStudio />}
+          {view === "sandbox" && <ToolSandbox />}
           {view === "faculty" && <FacultyConsole />}
         </main>
       </div>
@@ -183,8 +191,12 @@ export function AppShell() {
       <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-white/70 bg-white/80 backdrop-blur-xl lg:hidden">
         <div
           className={cn(
-            "mx-auto grid max-w-lg gap-1 px-2 py-2",
-            navItems.length === 4 ? "grid-cols-4" : "grid-cols-3"
+            "mx-auto grid max-w-2xl gap-1 px-2 py-2",
+            navItems.length >= 5
+              ? "grid-cols-3 sm:grid-cols-6"
+              : navItems.length === 4
+                ? "grid-cols-4"
+                : "grid-cols-3"
           )}
         >
           {navItems.map((item) => {

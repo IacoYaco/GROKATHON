@@ -6,7 +6,15 @@ import { GlossyOrb } from "@/components/visual/GlossyOrb";
 import { useAuth } from "@/hooks/useAuth";
 
 export function YaleLoginGate() {
-  const { loading, casLive, demoLogin, startCasLogin, simulated } = useAuth();
+  const {
+    loading,
+    casLive,
+    demoAuthAllowed,
+    demoFacultyAllowed,
+    demoLogin,
+    startCasLogin,
+    simulated,
+  } = useAuth();
   const [busy, setBusy] = useState<"student" | "faculty" | "cas" | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -60,52 +68,67 @@ export function YaleLoginGate() {
               ) : (
                 <University className="h-4 w-4" />
               )}
-              {casLive ? "Sign in with Yale CAS" : "Yale CAS (awaiting ITS registration)"}
+              {casLive
+                ? "Sign in with Yale CAS"
+                : "Yale CAS (awaiting ITS registration)"}
             </button>
 
-            <div className="gloss-panel rounded-[20px] p-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#6B7280]">
-                Demo Yale ID accounts
-              </p>
-              <p className="mt-1 text-sm text-[#424242]">
-                Until this service is registered with Yale ITS, use a demo NetID
-                role. Accounts persist in the app database.
-              </p>
-              <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-                <button
-                  type="button"
-                  disabled={Boolean(busy) || loading}
-                  onClick={() => onDemo("student")}
-                  className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full bg-white/90 px-4 text-sm font-semibold text-[#00356B] shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] ring-1 ring-[#E7E7E7]"
-                >
-                  {busy === "student" ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <GraduationCap className="h-4 w-4" />
-                  )}
-                  Enter as Student
-                </button>
-                <button
-                  type="button"
-                  disabled={Boolean(busy) || loading}
-                  onClick={() => onDemo("faculty")}
-                  className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full bg-[#00356B] px-4 text-sm font-semibold text-white"
-                >
-                  {busy === "faculty" ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Shield className="h-4 w-4" />
-                  )}
-                  Enter as Faculty
-                </button>
-              </div>
-              {error && <p className="mt-3 text-sm text-[#C5221F]">{error}</p>}
-              {simulated && (
-                <p className="mt-3 text-xs text-[#6B7280]">
-                  Local preview uses a simulated Cursor viewer.
+            {demoAuthAllowed && (
+              <div className="gloss-panel rounded-[20px] p-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#6B7280]">
+                  Demo student NetID
                 </p>
-              )}
-            </div>
+                <p className="mt-1 text-sm text-[#424242]">
+                  Until Yale ITS registers this service, students can continue
+                  with a demo NetID. Faculty access requires CAS affiliations
+                  {demoFacultyAllowed
+                    ? " (local preview may still demo faculty)."
+                    : "."}
+                </p>
+                <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+                  <button
+                    type="button"
+                    disabled={Boolean(busy) || loading}
+                    onClick={() => onDemo("student")}
+                    className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full bg-white/90 px-4 text-sm font-semibold text-[#00356B] shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] ring-1 ring-[#E7E7E7]"
+                  >
+                    {busy === "student" ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <GraduationCap className="h-4 w-4" />
+                    )}
+                    Enter as Student
+                  </button>
+                  {demoFacultyAllowed && (
+                    <button
+                      type="button"
+                      disabled={Boolean(busy) || loading}
+                      onClick={() => onDemo("faculty")}
+                      className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full bg-[#00356B] px-4 text-sm font-semibold text-white"
+                    >
+                      {busy === "faculty" ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Shield className="h-4 w-4" />
+                      )}
+                      Enter as Faculty (local)
+                    </button>
+                  )}
+                </div>
+                {error && <p className="mt-3 text-sm text-[#C5221F]">{error}</p>}
+                {simulated && (
+                  <p className="mt-3 text-xs text-[#6B7280]">
+                    Local preview uses a simulated Cursor viewer.
+                  </p>
+                )}
+              </div>
+            )}
+
+            {!demoAuthAllowed && !casLive && (
+              <p className="text-sm text-[#424242]">
+                Demo login is unavailable. Enable Yale CAS after ITS registration.
+              </p>
+            )}
           </div>
         </div>
 

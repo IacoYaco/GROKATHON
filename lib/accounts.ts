@@ -54,6 +54,14 @@ export async function upsertAccount(input: {
   college?: string;
   classYear?: string;
 }): Promise<CeidAccount> {
+  // Demo must never clobber a Yale CAS–verified account (role/affiliations).
+  if (input.authSource === "demo") {
+    const existing = await getAccountByCursorSub(input.cursorSub);
+    if (existing?.authSource === "yale_cas") {
+      throw new Error("Cannot overwrite a Yale CAS–linked account with demo auth");
+    }
+  }
+
   const rows = await sql<AccountRow>(
     `insert into ceid_accounts (
       cursor_sub, netid, display_name, email, role, affiliations, auth_source, college, class_year, last_login_at, updated_at
@@ -69,6 +77,8 @@ export async function upsertAccount(input: {
       class_year = excluded.class_year,
       last_login_at = now(),
       updated_at = now()
+    where ceid_accounts.auth_source is distinct from 'yale_cas'
+       or excluded.auth_source = 'yale_cas'
     returning *`,
     [
       input.cursorSub,
@@ -82,6 +92,11 @@ export async function upsertAccount(input: {
       input.classYear || "",
     ]
   );
+  if (!rows[0]) {
+    const kept = await getAccountByCursorSub(input.cursorSub);
+    if (kept) return kept;
+    throw new Error("Account upsert failed");
+  }
   return mapRow(rows[0]);
 }
 

@@ -8,7 +8,9 @@ Modern, mobile-responsive co-pilot for students and faculty at the Yale Center f
 2. **Floor Pulse & Snap-to-Diagnose** — Camera/upload a failed print; Grok Vision returns failure mode, root cause, and a fix checklist.
 3. **Agentic DFM Router** — Fabrication plans across CEID stations with cert gates (students) or faculty override.
 4. **Workshop & Cert Sniper** — Parse CEID newsletters, claim seats, download `.ics`.
-5. **Faculty Console** — RSVP roster, floor announcements, offline machine controls.
+5. **AI CAD Studio** — Natural-language STL edits with Three.js preview + download.
+6. **Tool Sandbox** — Just-in-time interactive CEID machine training panels.
+7. **Faculty Console** — RSVP roster, floor announcements, offline machine controls.
 
 ## Roles
 
@@ -40,7 +42,7 @@ npm run dev
 
 1. Register the service URL with Yale ITS: `https://<host>/api/auth/cas/callback`
 2. Set `YALE_CAS_ENABLED=true` (and optional `YALE_CAS_BASE_URL`)
-3. Until then, use **Enter as Student** / **Enter as Faculty** demo NetIDs on the login gate
+3. Until then, published users can use **Enter as Student** demo NetID only. Faculty roles come from CAS affiliations. Local simulated viewers may also demo faculty. Demo login is disabled when CAS is live, and cannot overwrite a CAS-linked account.
 
 ### Without an API key
 
