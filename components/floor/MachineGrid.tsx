@@ -40,19 +40,21 @@ function MachineCard({ machine }: { machine: Machine }) {
   const relative = formatRelativeTime(machine.reportedAt, now);
 
   return (
-    <article className="ceid-card flex flex-col p-4">
+    <article className="ceid-card ceid-card-hover flex flex-col p-4">
       <div className="flex items-start justify-between gap-2">
         <div>
-          <h3 className="font-semibold text-[#00356B]">{machine.name}</h3>
-          <p className="mt-1 text-sm text-[#6B7280]">{machine.material}</p>
+          <h3 className="font-semibold tracking-[-0.02em] text-[#0F172A]">
+            {machine.name}
+          </h3>
+          <p className="mt-1 text-sm text-[#475569]">{machine.material}</p>
         </div>
-        <StatusPill status={machine.status} />
+        <StatusPill status={machine.status} live={machine.status !== "offline"} />
       </div>
 
-      <div className="mt-3 flex items-center gap-1.5 text-xs text-[#6B7280]">
+      <div className="mt-3 flex items-center gap-1.5 text-xs text-[#64748B]">
         <Clock3 className="h-3.5 w-3.5" />
-        <span>
-          Reported {relative} • {conf.label}
+        <span className="ceid-mono">
+          Reported {relative} · {conf.label}
         </span>
       </div>
 

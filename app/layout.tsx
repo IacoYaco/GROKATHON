@@ -1,17 +1,19 @@
 import type { Metadata } from "next";
-import { DM_Sans, Fraunces } from "next/font/google";
+import { JetBrains_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import { AuthProvider } from "@/hooks/useAuth";
 import { CeidStoreProvider } from "@/hooks/useCeidStore";
 import "./globals.css";
 
-const dmSans = DM_Sans({
-  variable: "--font-dm-sans",
+const plusJakarta = Plus_Jakarta_Sans({
+  variable: "--font-plus-jakarta",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
 });
 
-const fraunces = Fraunces({
-  variable: "--font-fraunces",
+const jetbrains = JetBrains_Mono({
+  variable: "--font-jetbrains",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -28,9 +30,9 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${dmSans.variable} ${fraunces.variable} h-full antialiased`}
+      className={`${plusJakarta.variable} ${jetbrains.variable} h-full antialiased`}
     >
-      <body className="min-h-full font-sans text-[#212121]">
+      <body className="min-h-full font-sans text-[#0F172A]">
         <AuthProvider>
           <CeidStoreProvider>{children}</CeidStoreProvider>
         </AuthProvider>

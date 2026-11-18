@@ -1,7 +1,7 @@
 "use client";
 
-import { Camera, ImagePlus, Loader2, Wrench } from "lucide-react";
-import { useRef, useState } from "react";
+import { Camera, Copy, ImagePlus, Loader2, Wrench } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { useCeidStore } from "@/hooks/useCeidStore";
 import { MACHINE_OPTIONS, getSampleFailedPrintDataUrl } from "@/lib/sample-data";
@@ -17,7 +17,8 @@ async function fileToDataUrl(file: File): Promise<string> {
 }
 
 export function SnapToDiagnose() {
-  const { setApiMode, updateMachineStatus } = useCeidStore();
+  const { setApiMode, updateMachineStatus, consumePendingIntent } =
+    useCeidStore();
   const inputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [machineId, setMachineId] = useState(MACHINE_OPTIONS[0]?.id || "");
@@ -25,6 +26,11 @@ export function SnapToDiagnose() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<DiagnosisResult | null>(null);
+
+  useEffect(() => {
+    const intent = consumePendingIntent();
+    if (intent) setNote(intent);
+  }, [consumePendingIntent]);
 
   const runDiagnose = async (imageBase64: string) => {
     setLoading(true);
@@ -79,10 +85,10 @@ export function SnapToDiagnose() {
     <section className="ceid-card p-4 md:p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h2 className="text-lg font-semibold text-[#00356B]">
+          <h2 className="ceid-display text-lg font-semibold tracking-[-0.03em] text-[#0F172A]">
             Snap-to-Diagnose
           </h2>
-          <p className="mt-1 text-sm text-[#6B7280]">
+          <p className="mt-1 text-sm text-[#475569]">
             Camera capture or upload — Grok Vision returns failure mode, root
             cause, and a shop-floor fix checklist.
           </p>
@@ -157,15 +163,15 @@ export function SnapToDiagnose() {
 
         <div className="rounded-[12px] border border-[#E5E7EB] bg-[#F8F9FA] p-4">
           {loading && (
-            <div className="flex h-full min-h-48 flex-col items-center justify-center gap-3 text-center">
-              <Loader2 className="h-8 w-8 animate-spin text-[#286DC0]" />
-              <p className="text-sm font-medium text-[#00356B]">
-                Grok Vision inspecting layer lines...
+            <div className="relative flex h-full min-h-48 flex-col items-center justify-center gap-3 overflow-hidden rounded-xl bg-[#0B1120] text-center">
+              <div className="ceid-scanline" />
+              <Loader2 className="relative z-10 h-8 w-8 animate-spin text-[#93C5FD]" />
+              <p className="relative z-10 text-sm font-medium text-white">
+                Grok Vision inspecting layer lines…
               </p>
-              <div className="w-full space-y-2">
-                <div className="ceid-skeleton h-4 w-3/4 mx-auto" />
-                <div className="ceid-skeleton h-4 w-full" />
-                <div className="ceid-skeleton h-4 w-5/6 mx-auto" />
+              <div className="relative z-10 w-full space-y-2 px-6">
+                <div className="ceid-skeleton mx-auto h-4 w-3/4 opacity-40" />
+                <div className="ceid-skeleton h-4 w-full opacity-40" />
               </div>
             </div>
           )}
@@ -201,34 +207,53 @@ export function SnapToDiagnose() {
                   Verified via Grok Vision
                 </span>
               </div>
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">
-                  Identified Hardware
-                </p>
-                <p className="text-sm font-semibold text-[#00356B]">
-                  {result.hardware}
-                </p>
+              <div className="grid gap-2 sm:grid-cols-2">
+                <div className="rounded-xl border border-[rgba(15,23,42,0.08)] bg-white p-3">
+                  <p className="ceid-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-[#94A3B8]">
+                    Failure Mode
+                  </p>
+                  <p className="mt-1 text-sm font-semibold text-[#0F172A]">
+                    {result.failureMode}
+                  </p>
+                </div>
+                <div className="rounded-xl border border-[rgba(15,23,42,0.08)] bg-white p-3">
+                  <p className="ceid-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-[#94A3B8]">
+                    Hardware
+                  </p>
+                  <p className="mt-1 text-sm font-semibold text-[#00356B]">
+                    {result.hardware}
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">
+              <div className="rounded-xl border border-[rgba(15,23,42,0.08)] bg-white p-3">
+                <p className="ceid-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-[#94A3B8]">
                   Root Cause
                 </p>
-                <p className="text-sm text-[#374151]">{result.rootCause}</p>
+                <p className="mt-1 text-sm text-[#334155]">{result.rootCause}</p>
               </div>
               <div>
-                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[#6B7280]">
-                  Step-by-Step Fix
+                <p className="mb-2 ceid-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-[#94A3B8]">
+                  Exact Fix Parameters
                 </p>
                 <ol className="space-y-2">
                   {result.fixChecklist.map((step, i) => (
                     <li
                       key={i}
-                      className="flex gap-2 rounded-[10px] border border-[#E5E7EB] bg-white px-3 py-2 text-sm text-[#374151]"
+                      className="flex items-start gap-2 rounded-xl border border-[rgba(15,23,42,0.08)] bg-white px-3 py-2 text-sm text-[#334155]"
                     >
-                      <span className="font-semibold text-[#286DC0]">
+                      <span className="ceid-mono font-semibold text-[#286DC0]">
                         {i + 1}.
                       </span>
-                      <span>{step}</span>
+                      <span className="flex-1">{step}</span>
+                      <button
+                        type="button"
+                        className="inline-flex min-h-8 items-center gap-1 rounded-lg bg-[#F1F5F9] px-2 text-[11px] font-semibold text-[#00356B]"
+                        onClick={() => void navigator.clipboard?.writeText(step)}
+                        title="Copy step"
+                      >
+                        <Copy className="h-3 w-3" />
+                        Copy
+                      </button>
                     </li>
                   ))}
                 </ol>

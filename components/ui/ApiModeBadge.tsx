@@ -11,12 +11,13 @@ export function ApiModeBadge({ className }: { className?: string }) {
     return (
       <span
         className={cn(
-          "inline-flex min-h-11 items-center gap-1.5 rounded-full border border-[#E5E7EB] bg-white px-3 text-xs font-medium text-[#4B5563]",
+          "inline-flex min-h-9 items-center gap-1.5 rounded-full border border-[rgba(15,23,42,0.08)] bg-white px-3 text-xs font-medium text-[#475569]",
           className
         )}
       >
+        <span className="ceid-live-dot text-[#94A3B8]" />
         <Cpu className="h-3.5 w-3.5" />
-        Awaiting Grok call
+        Awaiting Grok
       </span>
     );
   }
@@ -25,10 +26,10 @@ export function ApiModeBadge({ className }: { className?: string }) {
   return (
     <span
       className={cn(
-        "inline-flex min-h-11 items-center gap-1.5 rounded-full px-3 text-xs font-semibold",
+        "inline-flex min-h-9 items-center gap-1.5 rounded-full px-3 text-xs font-semibold",
         live
-          ? "bg-[#E8F1FB] text-[#00356B]"
-          : "bg-[#FEF7E0] text-[#B06000]",
+          ? "bg-[#E8F1FB] text-[#00356B] ring-1 ring-[#286DC0]/20"
+          : "bg-[#FEF7E0] text-[#B06000] ring-1 ring-[#B06000]/15",
         className
       )}
       title={
@@ -38,11 +39,16 @@ export function ApiModeBadge({ className }: { className?: string }) {
       }
     >
       {live ? (
-        <Sparkles className="h-3.5 w-3.5" />
+        <>
+          <span className="ceid-live-dot" />
+          <Sparkles className="h-3.5 w-3.5" />
+        </>
       ) : (
         <Cpu className="h-3.5 w-3.5" />
       )}
-      {live ? "Live Grok API" : "Fallback mode"}
+      <span className="ceid-mono text-[11px]">
+        {live ? "Live Grok API" : "Fallback mode"}
+      </span>
     </span>
   );
 }

@@ -8,7 +8,7 @@ import {
   MapPin,
   ShieldAlert,
 } from "lucide-react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { useAuth } from "@/hooks/useAuth";
 import { useCeidStore } from "@/hooks/useCeidStore";
@@ -38,6 +38,7 @@ export function DfmPanel() {
     setApiMode,
     setDfmRequiredCerts,
     jumpToCertSniper,
+    consumePendingIntent,
   } = useCeidStore();
   const fileRef = useRef<HTMLInputElement>(null);
   const [description, setDescription] = useState("");
@@ -48,6 +49,11 @@ export function DfmPanel() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [plan, setPlan] = useState<DfmPlan | null>(null);
+
+  useEffect(() => {
+    const intent = consumePendingIntent();
+    if (intent) setDescription(intent);
+  }, [consumePendingIntent]);
 
   const lockedRequired =
     plan?.requiredCerts.filter(
@@ -94,10 +100,10 @@ export function DfmPanel() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-[family-name:var(--font-fraunces)] text-3xl font-light italic tracking-[-0.02em] text-[#212121] md:text-4xl">
+        <h1 className="ceid-display text-3xl font-semibold tracking-[-0.03em] text-[#0F172A] md:text-4xl">
           Agentic DFM Router
         </h1>
-        <p className="mt-1 max-w-2xl text-sm text-[#424242] md:text-base">
+        <p className="mt-1 max-w-2xl text-sm text-[#475569] md:text-base">
           Describe the build. Grok routes it across CEID stations, flags DFM
           traps, and gates on your live safety certifications.
         </p>
@@ -230,22 +236,20 @@ export function DfmPanel() {
               Recommended Fabrication Sequence
             </h2>
             <p className="mt-1 text-sm text-[#6B7280]">{plan.summary}</p>
-            <ol className="mt-4 space-y-3">
+            <ol className="mt-4 space-y-4">
               {plan.sequence.map((step) => (
-                <li
-                  key={step.order}
-                  className="rounded-[12px] border border-[#E5E7EB] bg-[#F8F9FA] p-3"
-                >
-                  <p className="text-xs font-semibold uppercase tracking-wide text-[#286DC0]">
-                    Step {step.order}: {step.station}
+                <li key={step.order} className="ceid-blueprint-step">
+                  <span className="ceid-blueprint-dot" aria-hidden />
+                  <p className="ceid-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-[#286DC0]">
+                    Step {step.order} · {step.station}
                   </p>
-                  <p className="mt-1 text-sm font-medium text-[#00356B]">
+                  <p className="mt-1 text-sm font-semibold tracking-[-0.02em] text-[#0F172A]">
                     {step.action}
                   </p>
                   {step.material && (
-                    <p className="mt-1 text-xs text-[#6B7280]">
-                      Material: {step.material}
-                    </p>
+                    <span className="mt-2 inline-flex rounded-full bg-[#E8F1FB] px-2.5 py-1 text-xs font-semibold text-[#00356B]">
+                      Rack · {step.material}
+                    </span>
                   )}
                   {step.requiredCert && (
                     <div className="mt-2">
@@ -312,7 +316,9 @@ export function DfmPanel() {
                   className="rounded-[12px] border border-[#E5E7EB] bg-[#F8F9FA] p-3"
                 >
                   <p className="font-semibold text-[#00356B]">{m.material}</p>
-                  <p className="mt-1 text-sm text-[#286DC0]">{m.location}</p>
+                  <p className="mt-1 inline-flex rounded-full bg-[#E8F1FB] px-2.5 py-1 text-xs font-semibold text-[#286DC0]">
+                    {m.location}
+                  </p>
                   {m.notes && (
                     <p className="mt-1 text-xs text-[#6B7280]">{m.notes}</p>
                   )}

@@ -115,10 +115,10 @@ export function MaterialsStock() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="font-[family-name:var(--font-fraunces)] text-3xl font-light italic tracking-[-0.02em] text-[#00356B] md:text-4xl">
+          <h1 className="ceid-display text-3xl font-semibold tracking-[-0.03em] text-[#0F172A] md:text-4xl">
             Materials & Stock
           </h1>
-          <p className="mt-1 max-w-2xl text-sm text-[#6B7280] md:text-base">
+          <p className="mt-1 max-w-2xl text-sm text-[#475569] md:text-base">
             Live CEID workshop inventory synced from TouchNet uStore #239, with
             floor-stock overlays for fasteners, filament, and consumables.
           </p>
@@ -238,7 +238,7 @@ export function MaterialsStock() {
 
           <div className="ceid-card hidden overflow-hidden md:block">
             <div className="overflow-x-auto">
-              <table className="min-w-full text-left text-sm">
+              <table className="min-w-full text-left text-sm tabular-nums">
                 <thead className="bg-[#F8F9FA] text-xs uppercase tracking-wide text-[#6B7280]">
                   <tr>
                     <th className="px-4 py-3 font-semibold">Material</th>

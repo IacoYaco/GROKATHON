@@ -8,7 +8,7 @@ import {
   Sparkles,
   Upload,
 } from "lucide-react";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { STLExporter } from "three/examples/jsm/exporters/STLExporter.js";
 import { STLLoader } from "three/examples/jsm/loaders/STLLoader.js";
@@ -84,7 +84,7 @@ function downloadStl(recipe: CadRecipe) {
 }
 
 export function CadStudio() {
-  const { setApiMode } = useCeidStore();
+  const { setApiMode, consumePendingIntent } = useCeidStore();
   const fileRef = useRef<HTMLInputElement>(null);
   const [partName, setPartName] = useState(PRESETS[0].name);
   const [bounds, setBounds] = useState<Bounds>(PRESETS[0].bounds);
@@ -132,6 +132,17 @@ export function CadStudio() {
     setRecipe(null);
   };
 
+  useEffect(() => {
+    const intent = consumePendingIntent();
+    if (!intent) return;
+    const preset = PRESETS.find((p) =>
+      intent.toLowerCase().includes(p.name.split(" ")[0]!.toLowerCase())
+    );
+    if (preset) loadPreset(preset.id);
+    setPrompt(intent);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [consumePendingIntent]);
+
   const runModify = async () => {
     if (!prompt.trim()) {
       setError("Describe the changes you want first.");
@@ -161,10 +172,10 @@ export function CadStudio() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-[family-name:var(--font-fraunces)] text-3xl font-light italic tracking-[-0.02em] text-[#00356B] md:text-4xl">
+        <h1 className="ceid-display text-3xl font-semibold tracking-[-0.03em] text-[#0F172A] md:text-4xl">
           AI CAD Studio
         </h1>
-        <p className="mt-1 max-w-2xl text-sm text-[#6B7280] md:text-base">
+        <p className="mt-1 max-w-2xl text-sm text-[#475569] md:text-base">
           Upload a reference STL or pick a CEID starter part, describe changes
           in plain English, preview the geometry, and download a printable STL.
         </p>
@@ -272,28 +283,28 @@ export function CadStudio() {
           {error && <p className="text-sm text-[#C5221F]">{error}</p>}
         </section>
 
-        <section className="ceid-card space-y-3 p-4 md:p-5">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-[#6B7280]">
-              Interactive viewport
-            </h2>
-            <div className="flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={() => setShowGhost((v) => !v)}
-                className="inline-flex min-h-11 items-center gap-1.5 rounded-[12px] border border-[#E5E7EB] bg-white px-3 text-xs font-semibold text-[#00356B]"
-              >
-                <Eye className="h-3.5 w-3.5" />
-                {showGhost ? "Hide" : "Show"} reference ghost
-              </button>
-              <button
-                type="button"
-                onClick={() => setWireframe((v) => !v)}
-                className="inline-flex min-h-11 items-center gap-1.5 rounded-[12px] border border-[#E5E7EB] bg-white px-3 text-xs font-semibold text-[#00356B]"
-              >
-                Wireframe {wireframe ? "on" : "off"}
-              </button>
-            </div>
+        <section className="relative overflow-hidden rounded-2xl border border-[rgba(15,23,42,0.08)] bg-[#0B1120] p-3 md:p-4">
+          <div className="pointer-events-none absolute left-4 top-4 z-10 flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => setWireframe((v) => !v)}
+              className="pointer-events-auto inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-white/15 bg-white/10 px-2.5 text-[11px] font-semibold text-white backdrop-blur"
+            >
+              Wireframe {wireframe ? "on" : "off"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowGhost((v) => !v)}
+              className="pointer-events-auto inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-white/15 bg-white/10 px-2.5 text-[11px] font-semibold text-white backdrop-blur"
+            >
+              <Eye className="h-3.5 w-3.5" />
+              Ghost {showGhost ? "on" : "off"}
+            </button>
+            <span className="ceid-mono inline-flex min-h-9 items-center rounded-lg border border-white/15 bg-white/10 px-2.5 text-[11px] font-semibold text-[#93C5FD] backdrop-blur">
+              {recipe
+                ? `${recipe.width.toFixed(1)} × ${recipe.depth.toFixed(1)} × ${recipe.height.toFixed(1)} mm`
+                : `${bounds.width} × ${bounds.depth} × ${bounds.height} mm`}
+            </span>
           </div>
 
           <CadViewport
@@ -303,12 +314,9 @@ export function CadStudio() {
             wireframe={wireframe}
           />
 
-          <div className="flex flex-wrap gap-2">
+          <div className="mt-3 flex flex-wrap gap-2">
             {recipe ? (
-              <StatusPill
-                status="free"
-                label={`${recipe.width.toFixed(1)} × ${recipe.depth.toFixed(1)} × ${recipe.height.toFixed(1)} mm`}
-              />
+              <StatusPill status="free" label="Mesh ready" />
             ) : (
               <StatusPill status="issue" label="No generated mesh yet" />
             )}
@@ -316,11 +324,11 @@ export function CadStudio() {
               <>
                 <StatusPill
                   status="certified"
-                  label={`~${stats.grams.toFixed(1)} g filament`}
+                  label={`~${stats.grams.toFixed(1)} g`}
                 />
                 <StatusPill
                   status="priority"
-                  label={`~${stats.minutes} min print`}
+                  label={`~${stats.minutes} min`}
                 />
               </>
             )}
@@ -330,30 +338,30 @@ export function CadStudio() {
             type="button"
             disabled={!recipe}
             onClick={() => recipe && downloadStl(recipe)}
-            className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-[12px] bg-[#286DC0] px-4 text-sm font-semibold text-white disabled:bg-[#9CA3AF]"
+            className="mt-3 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#286DC0] px-4 text-sm font-semibold text-white disabled:bg-[#334155]"
           >
             <Download className="h-4 w-4" />
-            Download Modified .STL
+            Download .STL
           </button>
 
           {recipe && (
-            <div className="space-y-3 rounded-[12px] border border-[#E5E7EB] bg-[#F8F9FA] p-3">
-              <p className="text-sm text-[#374151]">{recipe.summary}</p>
+            <div className="mt-3 space-y-3 rounded-xl border border-white/10 bg-white/5 p-3 text-white">
+              <p className="text-sm text-white/85">{recipe.summary}</p>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">
-                  How to do this in Onshape / Fusion 360
+                <p className="ceid-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-[#93C5FD]">
+                  Onshape / Fusion 360
                 </p>
-                <ol className="mt-1 list-decimal space-y-1 pl-4 text-sm text-[#374151]">
+                <ol className="mt-1 list-decimal space-y-1 pl-4 text-sm text-white/75">
                   {recipe.onshapeNotes.map((n, i) => (
                     <li key={i}>{n}</li>
                   ))}
                 </ol>
               </div>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">
+                <p className="ceid-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-[#93C5FD]">
                   Printability & tolerances
                 </p>
-                <ul className="mt-1 list-disc space-y-1 pl-4 text-sm text-[#374151]">
+                <ul className="mt-1 list-disc space-y-1 pl-4 text-sm text-white/75">
                   {recipe.printTips.map((n, i) => (
                     <li key={i}>{n}</li>
                   ))}

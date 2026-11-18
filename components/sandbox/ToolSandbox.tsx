@@ -80,7 +80,7 @@ function printerQuality(
 }
 
 export function ToolSandbox() {
-  const { setApiMode } = useCeidStore();
+  const { setApiMode, consumePendingIntent } = useCeidStore();
   const [prompt, setPrompt] = useState(SCENARIOS[0]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -156,13 +156,22 @@ export function ToolSandbox() {
     }
   };
 
+  useEffect(() => {
+    const intent = consumePendingIntent();
+    if (intent) {
+      setPrompt(intent);
+      void run(intent);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [consumePendingIntent]);
+
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-[family-name:var(--font-fraunces)] text-3xl font-light italic tracking-[-0.02em] text-[#00356B] md:text-4xl">
+        <h1 className="ceid-display text-3xl font-semibold tracking-[-0.03em] text-[#0F172A] md:text-4xl">
           Tool Sandbox
         </h1>
-        <p className="mt-1 max-w-2xl text-sm text-[#6B7280] md:text-base">
+        <p className="mt-1 max-w-2xl text-sm text-[#475569] md:text-base">
           Just-in-time CEID training — describe the job, practice on a virtual
           machine panel, and earn a sandbox-verified badge before floor
           check-off.
@@ -268,9 +277,9 @@ export function ToolSandbox() {
                         [control.id]: Number(e.target.value),
                       }))
                     }
-                    className="mt-2 w-full accent-[#286DC0]"
+                    className="ceid-fader mt-2 w-full"
                   />
-                  <p className="mt-1 text-xs text-[#6B7280]">
+                  <p className="ceid-mono mt-1 text-xs text-[#64748B]">
                     Target {control.targetMin}–{control.targetMax}
                     {control.unit}. {control.hint}
                   </p>

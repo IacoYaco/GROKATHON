@@ -46,6 +46,8 @@ function writeJson<T>(key: string, value: T) {
   localStorage.setItem(key, JSON.stringify(value));
 }
 
+export type IntentTarget = AppView;
+
 interface CeidStoreValue {
   hydrated: boolean;
   machines: Machine[];
@@ -54,6 +56,7 @@ interface CeidStoreValue {
   dfmRequiredCerts: CertId[];
   certFilter: CertId | null;
   materialsQuery: string;
+  pendingIntent: string | null;
   view: AppView;
   apiMode: ApiMode | null;
   setView: (view: AppView) => void;
@@ -61,6 +64,9 @@ interface CeidStoreValue {
   setCertFilter: (cert: CertId | null) => void;
   setMaterialsQuery: (query: string) => void;
   openMaterials: (query?: string) => void;
+  setPendingIntent: (intent: string | null) => void;
+  consumePendingIntent: () => string | null;
+  routeIntent: (text: string) => IntentTarget;
   toggleCert: (id: CertId) => void;
   updateMachineStatus: (
     id: string,
@@ -73,6 +79,33 @@ interface CeidStoreValue {
   jumpToCertSniper: (cert: CertId) => void;
 }
 
+function inferIntentTarget(text: string): IntentTarget {
+  const t = text.toLowerCase();
+  if (
+    /(string|warp|fail|failing|diagnos|prusa|bambu|print\s*fail|z-?offset|layer)/.test(
+      t
+    )
+  ) {
+    return "floor";
+  }
+  if (/(stl|cad|hole|bracket|enclosure|mount|parametric)/.test(t)) {
+    return "cad";
+  }
+  if (/(laser|acrylic|sandbox|power\s*%|epilog|solder|caliper)/.test(t)) {
+    return "sandbox";
+  }
+  if (/(stock|material|plywood|mdf|filament|touchnet|fastener)/.test(t)) {
+    return "materials";
+  }
+  if (/(workshop|cert|rsvp|newsletter)/.test(t)) {
+    return "workshops";
+  }
+  if (/(dfm|fabricat|route|build|cut\s+\d|station)/.test(t)) {
+    return "dfm";
+  }
+  return "dfm";
+}
+
 const CeidStoreContext = createContext<CeidStoreValue | null>(null);
 
 export function CeidStoreProvider({ children }: { children: ReactNode }) {
@@ -83,6 +116,7 @@ export function CeidStoreProvider({ children }: { children: ReactNode }) {
   const [dfmRequiredCerts, setDfmRequiredCertsState] = useState<CertId[]>([]);
   const [certFilter, setCertFilterState] = useState<CertId | null>(null);
   const [materialsQuery, setMaterialsQueryState] = useState("");
+  const [pendingIntent, setPendingIntentState] = useState<string | null>(null);
   const [view, setView] = useState<AppView>("home");
   const [apiMode, setApiMode] = useState<ApiMode | null>(null);
 
@@ -173,6 +207,27 @@ export function CeidStoreProvider({ children }: { children: ReactNode }) {
     setView("materials");
   }, []);
 
+  const setPendingIntent = useCallback((intent: string | null) => {
+    setPendingIntentState(intent);
+  }, []);
+
+  const consumePendingIntent = useCallback(() => {
+    const taken = pendingIntent;
+    if (taken) setPendingIntentState(null);
+    return taken;
+  }, [pendingIntent]);
+
+  const routeIntent = useCallback((text: string) => {
+    const trimmed = text.trim();
+    const target = inferIntentTarget(trimmed);
+    setPendingIntentState(trimmed || null);
+    if (target === "materials") {
+      setMaterialsQueryState(trimmed);
+    }
+    setView(target);
+    return target;
+  }, []);
+
   const claimRsvp = useCallback((workshop: Workshop): Rsvp => {
     const rsvp: Rsvp = {
       workshopId: workshop.id,
@@ -208,6 +263,7 @@ export function CeidStoreProvider({ children }: { children: ReactNode }) {
       dfmRequiredCerts,
       certFilter,
       materialsQuery,
+      pendingIntent,
       view,
       apiMode,
       setView,
@@ -215,6 +271,9 @@ export function CeidStoreProvider({ children }: { children: ReactNode }) {
       setCertFilter,
       setMaterialsQuery,
       openMaterials,
+      setPendingIntent,
+      consumePendingIntent,
+      routeIntent,
       toggleCert,
       updateMachineStatus,
       setDfmRequiredCerts,
@@ -230,11 +289,15 @@ export function CeidStoreProvider({ children }: { children: ReactNode }) {
       dfmRequiredCerts,
       certFilter,
       materialsQuery,
+      pendingIntent,
       view,
       apiMode,
       setCertFilter,
       setMaterialsQuery,
       openMaterials,
+      setPendingIntent,
+      consumePendingIntent,
+      routeIntent,
       toggleCert,
       updateMachineStatus,
       setDfmRequiredCerts,

@@ -34,7 +34,7 @@ export function CadViewport({
     if (!mount) return;
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color("#F8F9FA");
+    scene.background = new THREE.Color("#0B1120");
 
     const camera = new THREE.PerspectiveCamera(
       40,
@@ -62,7 +62,7 @@ export function CadViewport({
     fill.position.set(-30, 20, -40);
     scene.add(fill);
 
-    const grid = new THREE.GridHelper(200, 20, 0x286dc0, 0xe5e7eb);
+    const grid = new THREE.GridHelper(200, 20, 0x286dc0, 0x1e293b);
     scene.add(grid);
 
     stateRef.current = {
@@ -168,7 +168,7 @@ export function CadViewport({
   return (
     <div
       ref={mountRef}
-      className="h-[360px] w-full overflow-hidden rounded-[12px] border border-[#E5E7EB] bg-[#F8F9FA] md:h-[480px]"
+      className="h-[360px] w-full overflow-hidden rounded-2xl border border-white/10 bg-[#0B1120] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] md:h-[480px]"
     />
   );
 }

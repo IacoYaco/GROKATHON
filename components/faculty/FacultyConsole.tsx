@@ -88,7 +88,7 @@ export function FacultyConsole() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-[family-name:var(--font-fraunces)] text-3xl font-light italic tracking-[-0.02em] text-[#212121]">
+        <h1 className="ceid-display text-3xl font-semibold tracking-[-0.03em] text-[#0F172A]">
           Faculty Console
         </h1>
         <p className="mt-1 text-sm text-[#424242]">
@@ -144,7 +144,7 @@ export function FacultyConsole() {
                 <div>
                   <p className="font-semibold text-[#212121]">
                     {row.displayName}{" "}
-                    <span className="font-normal text-[#6B7280]">
+                    <span className="ceid-mono font-normal text-[#64748B]">
                       ({row.netid})
                     </span>
                   </p>
