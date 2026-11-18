@@ -1,5 +1,7 @@
 # CEID Co-Pilot
 
+Demo Video: https://drive.google.com/file/d/1VRhObgY0mTojgfnc4kMzoYeB01BPOp-f/view?usp=sharing
+
 Modern, mobile-responsive co-pilot for students and faculty at the Yale Center for Engineering Innovation and Design (CEID). Powered by the **xAI Grok API**, with **Yale CAS** account linking and role-based access (Student vs Faculty).
 
 ## Features
